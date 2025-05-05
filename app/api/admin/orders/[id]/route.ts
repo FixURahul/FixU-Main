@@ -1,126 +1,12 @@
-// import { NextRequest, NextResponse } from 'next/server';
-// import { verifyToken, getTokenFromRequest } from '@/lib/auth';
-// import connectDB from '@/lib/db';
-// import User from '@/models/User';
-
-// export async function PUT(
-//   request: NextRequest,
-//   context: { params: { id: string } }
-// ) {
-//   try {
-//     const token = getTokenFromRequest(request);
-//     if (!token) {
-//       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
-//     }
-
-//     const payload = await verifyToken(token);
-//     if (!payload || typeof payload === 'string' || !('userId' in payload)) {
-//       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
-//     }
-
-//     const { paymentId } = await request.json();
-
-//     await connectDB();
-    
-//     // Properly access params by awaiting the context.params
-//     const { id: orderId } = await context.params;
-
-//     // Find the user with this order
-//     const user = await User.findOne({ 'orders._id': orderId });
-//     if (!user) {
-//       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
-//     }
-
-//     // Find the order index
-//     const orderIndex = user.orders.findIndex(
-//       (order: any) => order._id.toString() === orderId
-//     );
-
-//     if (orderIndex === -1) {
-//       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
-//     }
-
-//     // Update the order with payment information
-//     // Use 'confirmed' instead of 'payment_completed' as per your model's enum
-//     user.orders[orderIndex].status = 'confirmed';
-//     user.orders[orderIndex].paymentId = paymentId;
-    
-//     await user.save();
-
-//     return NextResponse.json({
-//       success: true,
-//       message: 'Payment recorded successfully',
-//       orderId: (user.orders[orderIndex] as any)._id.toString()
-//     });
-//   } catch (error) {
-//     console.error('Error updating order payment:', error);
-//     return NextResponse.json({ error: 'Failed to update order payment' }, { status: 500 });
-//   }
-// }
-
-// import { NextRequest, NextResponse } from 'next/server'
-// import { verifyToken, getTokenFromRequest } from '@/lib/auth'
-// import connectDB from '@/lib/db'
-// import User from '@/models/User'
-
-// export async function PUT(
-//   request: NextRequest,
-//   { params }: { params: { id: string } }
-// ) {
-//   try {
-//     const token = getTokenFromRequest(request)
-//     if (!token) {
-//       return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
-//     }
-
-//     const payload = await verifyToken(token)
-//     if (!payload || typeof payload === 'string' || !('userId' in payload)) {
-//       return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
-//     }
-
-//     const { paymentId } = await request.json()
-
-//     await connectDB()
-
-//     const { id: orderId } = params
-
-//     const user = await User.findOne({ 'orders._id': orderId })
-//     if (!user) {
-//       return NextResponse.json({ error: 'Order not found' }, { status: 404 })
-//     }
-
-//     const orderIndex = user.orders.findIndex(
-//       (order: any) => order._id.toString() === orderId
-//     )
-
-//     if (orderIndex === -1) {
-//       return NextResponse.json({ error: 'Order not found' }, { status: 404 })
-//     }
-
-//     user.orders[orderIndex].status = 'confirmed'
-//     user.orders[orderIndex].paymentId = paymentId
-
-//     await user.save()
-
-//     return NextResponse.json({
-//       success: true,
-//       message: 'Payment recorded successfully',
-//       orderId: (user.orders[orderIndex] as any)._id.toString()
-//     })
-//   } catch (error) {
-//     console.error('Error updating order payment:', error)
-//     return NextResponse.json({ error: 'Failed to update order payment' }, { status: 500 })
-//   }
-// }
-
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyToken, getTokenFromRequest } from '@/lib/auth'
 import connectDB from '@/lib/db'
 import User from '@/models/User'
 
+// Update an order
 export async function PUT(
   request: NextRequest,
-  context: { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
   try {
     const token = getTokenFromRequest(request)
@@ -133,17 +19,21 @@ export async function PUT(
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
 
-    const { paymentId } = await request.json()
+    // Get the updated order data from the request
+    const { status, scheduledDate, serviceProvider, price } = await request.json()
 
     await connectDB()
 
-    const { id: orderId } = context.params
+    // Get the order ID from the URL parameter
+    const orderId = params.id
 
+    // Find the user with this order
     const user = await User.findOne({ 'orders._id': orderId })
     if (!user) {
       return NextResponse.json({ error: 'Order not found' }, { status: 404 })
     }
 
+    // Find the order index
     const orderIndex = user.orders.findIndex(
       (order: any) => order._id.toString() === orderId
     )
@@ -152,18 +42,36 @@ export async function PUT(
       return NextResponse.json({ error: 'Order not found' }, { status: 404 })
     }
 
-    user.orders[orderIndex].status = 'confirmed'
-    user.orders[orderIndex].paymentId = paymentId
+    // Update the order fields if provided
+    if (status) user.orders[orderIndex].status = status
+    if (scheduledDate) user.orders[orderIndex].scheduledDate = new Date(scheduledDate)
+    if (serviceProvider) user.orders[orderIndex].serviceProvider = serviceProvider
+    if (price) user.orders[orderIndex].price = price
 
     await user.save()
 
+    // Type assertion for the order object
+    const updatedOrder = user.orders[orderIndex] as unknown as {
+      _id: { toString(): string };
+      status: string;
+      scheduledDate: Date;
+      serviceProvider: string;
+      price: number;
+    };
+
     return NextResponse.json({
       success: true,
-      message: 'Payment recorded successfully',
-      orderId: (user.orders[orderIndex] as any)._id.toString()
+      message: 'Order updated successfully',
+      order: {
+        id: updatedOrder._id.toString(),
+        status: updatedOrder.status,
+        scheduledDate: updatedOrder.scheduledDate,
+        serviceProvider: updatedOrder.serviceProvider,
+        price: updatedOrder.price
+      }
     })
   } catch (error) {
-    console.error('Error updating order payment:', error)
-    return NextResponse.json({ error: 'Failed to update order payment' }, { status: 500 })
+    console.error('Error updating order:', error)
+    return NextResponse.json({ error: 'Failed to update order' }, { status: 500 })
   }
 }

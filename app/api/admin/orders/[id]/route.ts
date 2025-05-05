@@ -6,9 +6,9 @@ import User from "@/models/User";
 // Update an order
 export async function PUT(
   request: NextRequest,
-  context: { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
-  const { id } = context.params;
+  const { id } = params;
   try {
     const token = getTokenFromRequest(request);
     if (!token) {
@@ -19,7 +19,12 @@ export async function PUT(
     }
 
     const payload = await verifyToken(token);
-    if (!payload || typeof payload !== "object" || !("isAdmin" in payload) || !payload.isAdmin) {
+    if (
+      !payload ||
+      typeof payload !== "object" ||
+      !("isAdmin" in payload) ||
+      !payload.isAdmin
+    ) {
       return NextResponse.json(
         { error: "Admin access required" },
         { status: 403 }

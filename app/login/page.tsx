@@ -37,13 +37,19 @@ export default function Login() {
     setLoginError('');
     
     try {
-      await login(email, password);
-      // Add toast notification on successful login
-      showToast('Successfully logged in!', 'success');
-      // The redirect will happen in the useEffect when isAuthenticated becomes true
+      const result = await login(email, password);
+      // Only show success toast if login was successful
+      if (result && result.success) {
+        showToast('Successfully logged in!', 'success');
+        // The redirect will happen in the useEffect when isAuthenticated becomes true
+      } else if (result && result.error) {
+        setLoginError(result.error);
+        showToast(result.error, 'error');
+      }
     } catch (err) {
-      setLoginError('Login failed. Please check your credentials.');
-      showToast('Login failed. Please check your credentials.', 'error');
+      const errorMessage = 'Login failed. Please check your credentials.';
+      setLoginError(errorMessage);
+      showToast(errorMessage, 'error');
     }
   };
 

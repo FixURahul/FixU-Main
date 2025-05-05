@@ -1,86 +1,114 @@
-import { NextRequest, NextResponse } from "next/server";
-import { verifyToken, getTokenFromRequest } from "@/lib/auth";
-import connectDB from "@/lib/db";
-import User from "@/models/User";
+// import { NextRequest, NextResponse } from 'next/server';
+// import { verifyToken, getTokenFromRequest } from '@/lib/auth';
+// import connectDB from '@/lib/db';
+// import User from '@/models/User';
 
-// Update an order
+// export async function PUT(
+//   request: NextRequest,
+//   context: { params: { id: string } }
+// ) {
+//   try {
+//     const token = getTokenFromRequest(request);
+//     if (!token) {
+//       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
+//     }
+
+//     const payload = await verifyToken(token);
+//     if (!payload || typeof payload === 'string' || !('userId' in payload)) {
+//       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+//     }
+
+//     const { paymentId } = await request.json();
+
+//     await connectDB();
+    
+//     // Properly access params by awaiting the context.params
+//     const { id: orderId } = await context.params;
+
+//     // Find the user with this order
+//     const user = await User.findOne({ 'orders._id': orderId });
+//     if (!user) {
+//       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+//     }
+
+//     // Find the order index
+//     const orderIndex = user.orders.findIndex(
+//       (order: any) => order._id.toString() === orderId
+//     );
+
+//     if (orderIndex === -1) {
+//       return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+//     }
+
+//     // Update the order with payment information
+//     // Use 'confirmed' instead of 'payment_completed' as per your model's enum
+//     user.orders[orderIndex].status = 'confirmed';
+//     user.orders[orderIndex].paymentId = paymentId;
+    
+//     await user.save();
+
+//     return NextResponse.json({
+//       success: true,
+//       message: 'Payment recorded successfully',
+//       orderId: (user.orders[orderIndex] as any)._id.toString()
+//     });
+//   } catch (error) {
+//     console.error('Error updating order payment:', error);
+//     return NextResponse.json({ error: 'Failed to update order payment' }, { status: 500 });
+//   }
+// }
+
+import { NextRequest, NextResponse } from 'next/server'
+import { verifyToken, getTokenFromRequest } from '@/lib/auth'
+import connectDB from '@/lib/db'
+import User from '@/models/User'
+
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const { id } = params;
   try {
-    const token = getTokenFromRequest(request);
+    const token = getTokenFromRequest(request)
     if (!token) {
-      return NextResponse.json(
-        { error: "Authentication required" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
     }
 
-    const payload = await verifyToken(token);
-    if (
-      !payload ||
-      typeof payload !== "object" ||
-      !("isAdmin" in payload) ||
-      !payload.isAdmin
-    ) {
-      return NextResponse.json(
-        { error: "Admin access required" },
-        { status: 403 }
-      );
+    const payload = await verifyToken(token)
+    if (!payload || typeof payload === 'string' || !('userId' in payload)) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 })
     }
 
-    const orderData = await request.json();
-    await connectDB();
+    const { paymentId } = await request.json()
 
-    // Find the user with this order
-    const user = await User.findOne({ "orders._id": id });
+    await connectDB()
+
+    const { id: orderId } = params
+
+    const user = await User.findOne({ 'orders._id': orderId })
     if (!user) {
-      return NextResponse.json({ error: "Order not found" }, { status: 404 });
+      return NextResponse.json({ error: 'Order not found' }, { status: 404 })
     }
 
-    // Find and update the order
-    const orderIndex = (
-      user.orders as Array<{
-        _id: string;
-        status?: string;
-        scheduledDate?: Date;
-        serviceProvider?: string;
-        price?: number;
-      }>
-    ).findIndex((order) => order._id.toString() === id);
+    const orderIndex = user.orders.findIndex(
+      (order: any) => order._id.toString() === orderId
+    )
 
     if (orderIndex === -1) {
-      return NextResponse.json({ error: "Order not found" }, { status: 404 });
+      return NextResponse.json({ error: 'Order not found' }, { status: 404 })
     }
 
-    // Update the order fields
-    if (orderData.status) user.orders[orderIndex].status = orderData.status;
-    if (orderData.scheduledDate)
-      user.orders[orderIndex].scheduledDate = new Date(orderData.scheduledDate);
-    if (orderData.serviceProvider)
-      user.orders[orderIndex].serviceProvider = orderData.serviceProvider;
-    if (orderData.price) user.orders[orderIndex].price = orderData.price;
+    user.orders[orderIndex].status = 'confirmed'
+    user.orders[orderIndex].paymentId = paymentId
 
-    await user.save();
+    await user.save()
 
     return NextResponse.json({
       success: true,
-      message: "Order updated successfully",
-      order: {
-        id: (user.orders as Array<{ _id: string }>)[orderIndex]._id.toString(),
-        status: user.orders[orderIndex].status,
-        scheduledDate: user.orders[orderIndex].scheduledDate,
-        serviceProvider: user.orders[orderIndex].serviceProvider,
-        price: user.orders[orderIndex].price,
-      },
-    });
+      message: 'Payment recorded successfully',
+      orderId: (user.orders[orderIndex] as any)._id.toString()
+    })
   } catch (error) {
-    console.error("Error updating order:", error);
-    return NextResponse.json(
-      { error: "Failed to update order" },
-      { status: 500 }
-    );
+    console.error('Error updating order payment:', error)
+    return NextResponse.json({ error: 'Failed to update order payment' }, { status: 500 })
   }
 }

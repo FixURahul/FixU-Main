@@ -57,16 +57,12 @@
 //     return NextResponse.json({ error: 'Failed to update order payment' }, { status: 500 });
 //   }
 // }
-
 import { NextRequest, NextResponse } from 'next/server'
 import { verifyToken, getTokenFromRequest } from '@/lib/auth'
 import connectDB from '@/lib/db'
 import User from '@/models/User'
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest) {
   try {
     const token = getTokenFromRequest(request)
     if (!token) {
@@ -79,7 +75,9 @@ export async function PUT(
     }
 
     const { paymentId } = await request.json()
-    const orderId = params.id
+
+    // Extracting the `id` parameter from the URL
+    const orderId = request.nextUrl.pathname.split('/')[3]
 
     await connectDB()
 
@@ -111,3 +109,4 @@ export async function PUT(
     return NextResponse.json({ error: 'Failed to update order payment' }, { status: 500 })
   }
 }
+

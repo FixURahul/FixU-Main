@@ -6,7 +6,7 @@ import Service from '@/models/Service';
 // Get a specific service
 export async function GET(
   request: NextRequest,
-  context: { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
   try {
     const token = getTokenFromRequest(request);
@@ -14,18 +14,21 @@ export async function GET(
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });
     }
 
-    await verifyToken(token);
+    const payload = await verifyToken(token);
+    if (!payload || typeof payload === 'string' || !('userId' in payload)) {
+      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    }
+
     await connectDB();
-    
-    // Get params properly by awaiting them
-    const params = await context.params;
-    
-    const service = await Service.findById(params.id);
-    
+
+    const serviceId = params.id;
+
+    const service = await Service.findById(serviceId);
+
     if (!service) {
       return NextResponse.json({ error: 'Service not found' }, { status: 404 });
     }
-    
+
     return NextResponse.json({
       service: {
         id: service._id.toString(),
@@ -40,15 +43,15 @@ export async function GET(
       }
     });
   } catch (error) {
-    console.error('Error fetching service:', error);
-    return NextResponse.json({ error: 'Failed to fetch service' }, { status: 500 });
+    console.error('Error getting service:', error);
+    return NextResponse.json({ error: 'Failed to get service' }, { status: 500 });
   }
 }
 
 // Update a service
 export async function PUT(
   request: NextRequest, 
-  context: { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
   try {
     const token = getTokenFromRequest(request);
@@ -65,16 +68,13 @@ export async function PUT(
     
     await connectDB();
     
-    // Get params properly
-    const params = await context.params;
+    const serviceId = params.id;
     
-    // Check if service exists
-    const service = await Service.findById(params.id);
+    const service = await Service.findById(serviceId);
     if (!service) {
       return NextResponse.json({ error: 'Service not found' }, { status: 404 });
     }
     
-    // Update service fields
     service.title = title;
     service.type = type;
     service.description = description;
@@ -108,7 +108,7 @@ export async function PUT(
 // Delete a service
 export async function DELETE(
   request: NextRequest,
-  context: { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
   try {
     const token = getTokenFromRequest(request);
@@ -123,10 +123,9 @@ export async function DELETE(
 
     await connectDB();
     
-    // Get params properly by awaiting them
-    const params = await context.params;
+    const serviceId = params.id;
     
-    const result = await Service.findByIdAndDelete(params.id);
+    const result = await Service.findByIdAndDelete(serviceId);
     if (!result) {
       return NextResponse.json({ error: 'Service not found' }, { status: 404 });
     }
@@ -144,7 +143,7 @@ export async function DELETE(
 // Toggle service status
 export async function PATCH(
   request: NextRequest,
-  context: { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
   try {
     const token = getTokenFromRequest(request);
@@ -159,17 +158,14 @@ export async function PATCH(
 
     await connectDB();
     
-    // Get params properly by awaiting them
-    const params = await context.params;
+    const serviceId = params.id;
     
-    // Use the awaited params.id
-    const service = await Service.findById(params.id);
+    const service = await Service.findById(serviceId);
     
     if (!service) {
       return NextResponse.json({ error: 'Service not found' }, { status: 404 });
     }
     
-    // Toggle active status
     service.active = !service.active;
     await service.save();
     

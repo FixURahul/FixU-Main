@@ -145,11 +145,18 @@ import { verifyToken, getTokenFromRequest } from '@/lib/auth'
 import connectDB from '@/lib/db'
 import User from '@/models/User'
 
+// Helper to extract ID from the URL
+function extractIdFromRequest(req: NextRequest): string | null {
+  const url = new URL(req.url)
+  const segments = url.pathname.split('/')
+  return segments[segments.length - 1] || null
+}
+
 // GET a specific user
-export async function GET(
-  request: NextRequest,
-  context: { params: { id: string } }
-) {
+export async function GET(request: NextRequest) {
+  const id = extractIdFromRequest(request)
+  if (!id) return NextResponse.json({ error: 'Missing user ID' }, { status: 400 })
+
   try {
     const token = getTokenFromRequest(request)
     if (!token) {
@@ -163,10 +170,7 @@ export async function GET(
 
     await connectDB()
 
-    const user = await User.findById(context.params.id).select(
-      'name email phone isAdmin createdAt'
-    )
-
+    const user = await User.findById(id).select('name email phone isAdmin createdAt')
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
@@ -187,11 +191,11 @@ export async function GET(
   }
 }
 
-// UPDATE a user
-export async function PUT(
-  request: NextRequest,
-  context: { params: { id: string } }
-) {
+// PUT (Update) a user
+export async function PUT(request: NextRequest) {
+  const id = extractIdFromRequest(request)
+  if (!id) return NextResponse.json({ error: 'Missing user ID' }, { status: 400 })
+
   try {
     const token = getTokenFromRequest(request)
     if (!token) {
@@ -207,7 +211,7 @@ export async function PUT(
 
     await connectDB()
 
-    const user = await User.findById(context.params.id)
+    const user = await User.findById(id)
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
@@ -239,10 +243,10 @@ export async function PUT(
 }
 
 // DELETE a user
-export async function DELETE(
-  request: NextRequest,
-  context: { params: { id: string } }
-) {
+export async function DELETE(request: NextRequest) {
+  const id = extractIdFromRequest(request)
+  if (!id) return NextResponse.json({ error: 'Missing user ID' }, { status: 400 })
+
   try {
     const token = getTokenFromRequest(request)
     if (!token) {
@@ -256,11 +260,11 @@ export async function DELETE(
 
     await connectDB()
 
-    if (context.params.id === payload.userId) {
+    if (id === payload.userId) {
       return NextResponse.json({ error: 'Cannot delete your own account' }, { status: 400 })
     }
 
-    const result = await User.findByIdAndDelete(context.params.id)
+    const result = await User.findByIdAndDelete(id)
     if (!result) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }

@@ -21,7 +21,7 @@ export async function middleware(request: NextRequest) {
       const payload = await verifyToken(authToken);
       
       // Check if the user is an admin
-      if (!payload.isAdmin) {
+      if (!payload || typeof payload === 'string' || !payload.isAdmin) {
         // User is not an admin, redirect to home
         return NextResponse.redirect(new URL('/', request.url));
       }

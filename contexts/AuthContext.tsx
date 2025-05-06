@@ -15,8 +15,8 @@ interface User {
 interface AuthContextType {
   user: User | null;
   token: string | null;
-  login: (email: string, password: string) => Promise<void>;
-  register: (userData: RegisterData) => Promise<void>;
+  login: (email: string, password: string) => Promise<{ success: boolean, error?: string }>;
+  register: (userData: RegisterData) => Promise<{ success: boolean, error?: string } | void>;
   logout: () => void;
   loading: boolean;
   error: string | null;
@@ -129,10 +129,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.setItem('auth-user', JSON.stringify(adminUser));
         document.cookie = `auth-token=${adminToken}; path=/; max-age=604800; SameSite=Lax`;
         
-        return;
+        return { success: true };
       }
       
-      // Regular user login (existing code)
+      // Regular user login
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: {
@@ -144,21 +144,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const data = await response.json();
       
       if (!response.ok) {
-        throw new Error(data.error || 'Login failed');
+        setError(data.error || 'Login failed');
+        return { success: false, error: data.error || 'Login failed' };
       }
       
       setToken(data.token);
       setUser(data.user);
       setIsAuthenticated(true);
-      setIsAdmin(data.user.isAdmin || false); // Set admin state based on user data
+      setIsAdmin(data.user.isAdmin || false);
 
       localStorage.setItem('auth-token', data.token);
       localStorage.setItem('auth-user', JSON.stringify(data.user));
       
       document.cookie = `auth-token=${data.token}; path=/; max-age=604800; SameSite=Lax`;
       
+      return { success: true };
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
+      const errorMessage = err instanceof Error ? err.message : 'Login failed';
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
     } finally {
       setLoading(false);
     }
@@ -180,7 +184,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const data = await response.json();
       
       if (!response.ok) {
-        throw new Error(data.error || 'Registration failed');
+        setError(data.error || 'Registration failed');
+        return { success: false, error: data.error || 'Registration failed' };
       }
       
       setToken(data.token);
@@ -192,8 +197,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       document.cookie = `auth-token=${data.token}; path=/; max-age=604800; SameSite=Lax`;
       
+      return { success: true };
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Registration failed');
+      const errorMessage = err instanceof Error ? err.message : 'Registration failed';
+      setError(errorMessage);
+      return { success: false, error: errorMessage };
     } finally {
       setLoading(false);
     }

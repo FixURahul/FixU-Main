@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '../../contexts/AuthContext';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "../../contexts/AuthContext";
 
 interface Order {
   _id: string;
   serviceName: string;
   serviceProvider: string;
-  status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
+  status: "pending" | "confirmed" | "completed" | "cancelled";
   scheduledDate: string;
   price: number;
   address: string;
@@ -27,7 +27,7 @@ export default function Profile() {
   // we have client-side protection
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
-      router.replace('/login?from=/profile');
+      router.replace("/login?from=/profile");
     }
   }, [authLoading, isAuthenticated, router]);
 
@@ -36,19 +36,19 @@ export default function Profile() {
       if (!token) return;
 
       try {
-        const response = await fetch('/api/orders', {
+        const response = await fetch("/api/orders", {
           headers: {
-            'Authorization': `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
         });
 
         if (!response.ok) {
-          throw new Error('Failed to fetch orders');
+          throw new Error("Failed to fetch orders");
         }
         const data = await response.json();
         setOrders(data.orders || []);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch orders');
+        setError(err instanceof Error ? err.message : "Failed to fetch orders");
       } finally {
         setLoading(false);
       }
@@ -81,7 +81,7 @@ export default function Profile() {
     <div className="bg-gray-100 min-h-screen">
       <div className="max-w-6xl mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-6">My Profile</h1>
-        
+
         <div className="bg-white rounded-lg shadow-md p-6 mb-8">
           <h2 className="text-xl font-semibold mb-4">Personal Information</h2>
           {user && (
@@ -108,31 +108,45 @@ export default function Profile() {
             </button>
           </div>
         </div>
-        
+
         <div className="bg-white rounded-lg shadow-md p-6">
           <h2 className="text-xl font-semibold mb-4">My Orders</h2>
-          
+
           {loading ? (
             <p className="text-center py-4">Loading your orders...</p>
           ) : error ? (
             <p className="text-red-600 text-center py-4">{error}</p>
           ) : orders.length === 0 ? (
-            <p className="text-center py-4 text-gray-600">You haven't placed any orders yet.</p>
+            <p className="text-center py-4 text-gray-600">
+              You haven't placed any orders yet.
+            </p>
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
                       Service
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
                       Status
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
                       Date
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th
+                      scope="col"
+                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
                       Price
                     </th>
                     <th scope="col" className="relative px-6 py-3">
@@ -144,17 +158,27 @@ export default function Profile() {
                   {orders.map((order) => (
                     <tr key={order._id}>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{order.serviceName}</div>
-                        <div className="text-sm text-gray-500">{order.serviceProvider}</div>
+                        <div className="text-sm font-medium text-gray-900">
+                          {order.serviceName}
+                        </div>
+                        <div className="text-sm text-gray-500">
+                          {order.serviceProvider}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          order.status === 'completed' ? 'bg-green-100 text-green-800' : 
-                          order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
-                          order.status === 'confirmed' ? 'bg-blue-100 text-blue-800' :
-                          'bg-yellow-100 text-yellow-800'
-                        }`}>
-                          {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                        <span
+                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                            order.status === "completed"
+                              ? "bg-green-100 text-green-800"
+                              : order.status === "cancelled"
+                              ? "bg-red-100 text-red-800"
+                              : order.status === "confirmed"
+                              ? "bg-blue-100 text-blue-800"
+                              : "bg-yellow-100 text-yellow-800"
+                          }`}
+                        >
+                          {order.status.charAt(0).toUpperCase() +
+                            order.status.slice(1)}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">

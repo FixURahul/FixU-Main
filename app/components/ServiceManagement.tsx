@@ -294,7 +294,7 @@ export default function ServiceManagement() {
                 />
               </div>
               <div>
-                <label className="block mb-1">Service Type (URL slug)</label>
+                <label className="block mb-1">Image Url</label>
                 <input
                   type="text"
                   name="type"

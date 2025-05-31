@@ -1,18 +1,24 @@
-'use client';
+"use client";
 
-import React, { useState, useRef, useEffect } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { Menu, X, ChevronDown, User } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
-import { useRouter } from 'next/navigation';
-import { useToast } from '../../contexts/ToastContext';
+import React, { useState, useRef, useEffect } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { Menu, X, ChevronDown, User } from "lucide-react";
+import { useAuth } from "../../contexts/AuthContext";
+import { useRouter } from "next/navigation";
+import { useToast } from "../../contexts/ToastContext";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
   const [isServicesOpen, setIsServicesOpen] = useState<boolean>(false);
   const [isProfileOpen, setIsProfileOpen] = useState<boolean>(false);
-  const { user, logout: authLogout, isAuthenticated, isAdmin, token } = useAuth();
+  const {
+    user,
+    logout: authLogout,
+    isAuthenticated,
+    isAdmin,
+    token,
+  } = useAuth();
   const { showToast } = useToast();
   const router = useRouter();
   const profileDropdownRef = useRef<HTMLDivElement>(null);
@@ -25,14 +31,17 @@ export default function Header() {
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target as Node)) {
+      if (
+        profileDropdownRef.current &&
+        !profileDropdownRef.current.contains(event.target as Node)
+      ) {
         setIsProfileOpen(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
 
@@ -41,10 +50,10 @@ export default function Header() {
     // Close the mobile menu when clicking profile
     setIsMenuOpen(false);
     if (isAuthenticated) {
-      router.push('/profile');
+      router.push("/profile");
     } else {
       // Using direct navigation instead of router.push to avoid encoding
-      window.location.href = '/login?redirect=/profile';
+      window.location.href = "/login?redirect=/profile";
     }
   };
 
@@ -58,21 +67,21 @@ export default function Header() {
     if (isAuthenticated && token) {
       const checkTokenInterval = setInterval(async () => {
         try {
-          const response = await fetch('/api/auth/validate', {
+          const response = await fetch("/api/auth/validate", {
             headers: {
-              'Authorization': `Bearer ${token}`
+              Authorization: `Bearer ${token}`,
             },
           });
-          
+
           if (!response.ok) {
-            console.log('Token validation failed, logging out');
+            console.log("Token validation failed, logging out");
             authLogout();
           }
         } catch (error) {
-          console.error('Error checking token validity:', error);
+          console.error("Error checking token validity:", error);
         }
       }, 5 * 60 * 1000); // Check every 5 minutes
-      
+
       return () => clearInterval(checkTokenInterval);
     }
   }, [isAuthenticated, token, authLogout]);
@@ -80,7 +89,7 @@ export default function Header() {
   // Create a wrapper function for logout that includes the toast
   const handleLogout = () => {
     authLogout();
-    showToast('Successfully signed out!', 'success');
+    showToast("Successfully signed out!", "success");
   };
 
   return (
@@ -89,11 +98,11 @@ export default function Header() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center">
-            <Image 
-              src="/FixULogo.jpg" 
-              alt="FixU Logo" 
-              width={120} 
-              height={120} 
+            <Image
+              src="/FixULogo.jpg"
+              alt="FixU Logo"
+              width={120}
+              height={120}
             />
           </Link>
 
@@ -103,37 +112,62 @@ export default function Header() {
               Home
             </Link>
             <div className="relative group">
-              <button 
+              <button
                 className="flex items-center hover:text-orange-500 transition-colors"
                 onClick={() => setIsServicesOpen(!isServicesOpen)}
               >
                 Services <ChevronDown className="ml-1 w-4 h-4" />
               </button>
               {/* Dropdown menu for services */}
-              <div className={`absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 ${isServicesOpen ? 'block' : 'hidden'} z-10`}>
+              <div
+                className={`absolute left-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 ${
+                  isServicesOpen ? "block" : "hidden"
+                } z-10`}
+              >
                 <div className="py-1">
-                  <Link href="/services/plumbing" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                  <Link
+                    href="/services/plumbing"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
                     Plumbing
                   </Link>
-                  <Link href="/services/electrical" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                  <Link
+                    href="/services/electrical"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
                     Electrical
                   </Link>
-                  <Link href="/services/cleaning" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                  <Link
+                    href="/services/cleaning"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
                     Cleaning
                   </Link>
-                  <Link href="/services" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                  <Link
+                    href="/services"
+                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
                     View All
                   </Link>
                 </div>
               </div>
             </div>
-            <Link href="/how-it-works" className="hover:text-orange-500 transition-colors">
+            <Link
+              href="/how-it-works"
+              className="hover:text-orange-500 transition-colors"
+            >
               How It Works
             </Link>
-            <Link href="/testimonials" className="hover:text-orange-500 transition-colors">
+            <Link
+              href="/testimonials"
+              className="hover:text-orange-500 transition-colors"
+            >
               Testimonials
             </Link>
-            <Link href="/locations" className="hover:text-orange-500 transition-colors">
+            <Link
+              href="/locations"
+              className="hover:text-orange-500 transition-colors"
+            >
               Locations
             </Link>
           </nav>
@@ -142,20 +176,22 @@ export default function Header() {
           <div className="hidden md:flex items-center space-x-4">
             {isAuthenticated && user ? (
               <div className="relative" ref={profileDropdownRef}>
-                <button 
+                <button
                   className="flex items-center hover:text-orange-500 transition-colors"
                   onClick={toggleProfileDropdown}
                 >
                   <User className="mr-1 w-5 h-5" />
-                  {user.name.split(' ')[0]}
+                  {user.name.split(" ")[0]}
                 </button>
                 {/* Force hidden by default, controlled fully by state */}
-                <div 
-                  className={`absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 ${isProfileOpen ? 'block' : 'hidden'} z-10`}
-                  style={{ display: isProfileOpen ? 'block' : 'none' }}
+                <div
+                  className={`absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 ${
+                    isProfileOpen ? "block" : "hidden"
+                  } z-10`}
+                  style={{ display: isProfileOpen ? "block" : "none" }}
                 >
                   <div className="py-1">
-                    <button 
+                    <button
                       onClick={handleProfileClick}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                     >

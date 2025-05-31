@@ -191,7 +191,7 @@ export default function ServiceRequestPage() {
     try {
       console.log("Using token for request:", token.substring(0, 20) + "...");
       
-      const calculatedPrice = Math.floor(Math.random() * 2000) + 500;
+      const calculatedPrice = 99;
       
       const orderData = {
         serviceName: getServiceName(formData.serviceType),

@@ -1,6 +1,9 @@
 "use client"
 import React, { useEffect, useState } from 'react';
 import Howweworks from "../components/hww"
+import HowItWorksSection from "../components/Hiw"
+import WhyChooseUsSection from '../components/WhyChooseUsSection';
+
 const FixUHowItWorks: React.FC = () => {
   const [showScrollToTop, setShowScrollToTop] = useState(false);
 
@@ -17,28 +20,6 @@ const FixUHowItWorks: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const steps = [
-    {
-      number: 1,
-      title: "Book a Service",
-      description: "Choose from our range of professional services."
-    },
-    {
-      number: 2,
-      title: "Schedule",
-      description: "Select your preferred date and time slot."
-    },
-    {
-      number: 3,
-      title: "Professional Visit",
-      description: "Our verified expert arrives at your doorstep."
-    },
-    {
-      number: 4,
-      title: "Enjoy & Rate",
-      description: "Rate your experience and provide feedback."
-    }
-  ];
 
   const benefits = [
     {
@@ -69,31 +50,7 @@ const FixUHowItWorks: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 py-12 sm:px-6 lg:px-8">
 <Howweworks/>
 
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900">How It Works</h2>
-          <p className="mt-4 text-lg text-gray-600">
-            Experience seamless home services with our simple 4-step process.
-          </p>
-        </div>
-
-        {/* Process Steps */}
-        <div className="relative">
-          {/* Connection Line */}
-          <div className="hidden sm:block absolute top-1/2 transform -translate-y-1/2 left-0 right-0 h-0.5 bg-gray-200"></div>
-          
-          {/* Steps */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 relative">
-            {steps.map((step) => (
-              <div key={step.number} className="flex flex-col items-center">
-                <div className="flex items-center justify-center w-16 h-16 rounded-full bg-orange-500 text-white text-xl font-bold mb-4 z-10">
-                  {step.number}
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900">{step.title}</h3>
-                <p className="mt-2 text-center text-gray-600">{step.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
+        <HowItWorksSection/>
       </div>
 
       {/* Why Choose Us Section */}

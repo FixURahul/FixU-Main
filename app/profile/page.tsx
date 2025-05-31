@@ -189,7 +189,7 @@ export default function Profile() {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button className="text-orange-600 hover:text-orange-900">
-                          View
+                          Pay
                         </button>
                       </td>
                     </tr>
